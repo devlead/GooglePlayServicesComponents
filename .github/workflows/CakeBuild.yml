@@ -1,0 +1,47 @@
+name: CakeBuild
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - hotfix/*
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+    steps:
+      - name: Get the sources
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK (global.json)
+        uses: actions/setup-dotnet@v1
+
+      - name: Run Cake script
+        uses: cake-build/cake-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AndroidBinderatorVersion: 0.5.4
+          AndroidXMigrationVersion: 1.0.10
+          BootsVersion: 1.1.0.712-preview2
+          DotNetVersion: 6.0.401
+          XcodeVersion: 13.3.1
+          DotNet6Source: https://aka.ms/dotnet6/nuget/index.json
+          NuGetOrgSource: https://api.nuget.org/v3/index.json
+          XamarinDotNetWorkloadSource: workloads.json
+          LegacyXamarinAndroidPkg:  https://aka.ms/xamarin-android-commercial-d17-3-macos
+          LegacyXamarinAndroidVsix: https://aka.ms/xamarin-android-commercial-d17-3-windows
+          BUILD_NUMBER: ${{ github.run_number }}
+          BUILD_COMMIT: ${{ github.sha }}
+        with:
+          cake-version: tool-manifest
+          target: ci
+
